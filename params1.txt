@@ -1,0 +1,2 @@
+cols;max_range;step_by_step;log_level;log_file_name
+"white,blue,red";10;True;2;'test.log'
