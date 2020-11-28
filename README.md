@@ -3,7 +3,7 @@ Projet de M2 création d'un automate cellulaire
 
 
 
-###5 Fichiers de tests
+### Fichiers de tests
 
 initial_statecg1; transition_matrix_cg1; params1.txt
 
