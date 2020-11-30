@@ -1,7 +1,23 @@
-# Automate-cellulaire
+# Automate-cellulaire - Louis LESUEUR
 Projet de M2 création d'un automate cellulaire
 
+### Requiert
 
+Python 3 ou supérieur.
+
+numpy
+
+pandas
+
+matplotlib
+
+random
+
+logging
+
+pylab
+
+sys
 
 ### Fichiers de tests
 
