@@ -15,7 +15,7 @@ import random
 
 # ## Constructeur
 # 
-# La signature : __init__(self, initial_state, transition_matrix, cols = [ ], max_range = None, step_by_step = True, log_level = 2, log_file_name = 'activity.log' )
+# La signature : __init__(self, initial_state, transition_matrix, cols = [ ], direction = ['random'], max_range = None, step_by_step = True, log_level = 2, log_file_name = 'activity.log' )
 # 
 # Les arguments du constructeur sont les suivants:
 # 
@@ -29,6 +29,8 @@ import random
 # 
 # * cols : (optionnel, default = None). Permet de spécifier le mapping index de l'espèce/ couleur associée. Si None le mapping sera laissé à la black box de matplotlib. Sinon doit être une liste/un array de dimension n_spieces. Un check de l'input est fait dans la méthode privée check_cols(cols =  cols, transition_matrix = transition_matrix)
 #     - Si la dimension de cols est $\ne$ n_spieces le mapping de Python par défault sera laissé.
+# 
+# * direction : (optionnel, default = ['random']). Permet de spécifier le sens des transitions effectués par l'automate. Si par nature les transitions devraient pouvoir s'effectuer partout, on peut ne souhaiter simuler que la gravié ou le vent. Doit être une liste d'élements parmi 'random', 'up', 'down', 'left', 'right', 'wind:right', 'wind:left', 'sky', 'gravity'.
 # 
 # * max_range : (optionnel, default = None) None si l'univers peut s'étendre à l'infini, en cas d'univers fini on s'attend à un entier positif au moins plus grand que la dimension de initial_state (dans le cas ou initial_state est une matrice carrée). Les modifications et erreurs seront traitées dans la métode privée check_max_range(initial_state, max_range).
 #     - Si la valeur n'est pas un entier, on tentera une conversion en entier
@@ -58,6 +60,7 @@ import random
 # - all_states : liste contenant tous les états enregistrés du système (dont initial_state).
 # - current_state : dernier état enregistré du système (commence par pointer sur initial_state).
 # - max_range
+# - direction
 # - logger (associé au module)
 # - n_spieces : nombre d'espèces (racine de la dimension de transition_matrix)
 # - transition_matrix : pointe sur l'input du même nom (éventuellement renormalisé)
@@ -78,7 +81,7 @@ import random
 
 # ### Configuration 1
 
-# In[2]:
+# In[4]:
 
 
 max_range3 = 10
@@ -96,9 +99,11 @@ transition_matrix3 = rand(3**2,3**2)
 transition_matrix3 = array([e/sum(e) for e in transition_matrix3])
 cols3 = ['white','red','blue']
 step_by_step3 = True
+direction3 = ['random']
 cg3 = ca.Cellular_automaton (initial_state3, 
                              transition_matrix3, 
-                             cols3, 
+                             cols3,
+                             direction3,
                              max_range3, 
                              step_by_step3, 
                              log_level=1, 
@@ -108,7 +113,7 @@ print(cg3)
 
 # ### Configuration 2
 
-# In[3]:
+# In[5]:
 
 
 n_spieces2 = 3 #0,1 et 2
@@ -116,11 +121,13 @@ max_range2 = None
 initial_state2 = asarray([ [1,1,0], [1,2,1], [2,2,0], [0,0,0] ]) 
 transition_matrix2 = rand(n_spieces2**2,n_spieces2**2)
 transition_matrix2 = array([e/sum(e) for e in transition_matrix2])
+direction2 = ['random']
 cols2 = ['white','red','blue']
 step_by_step2 = False
 cg2 = ca.Cellular_automaton (initial_state2, 
                              transition_matrix2, 
-                             cols2,  
+                             cols2, 
+                             direction2,
                              max_range2, 
                              step_by_step2, 
                              log_level=1, 
@@ -133,71 +140,47 @@ print(cg2)
 
 # ### Le choix aléatoire des couples : module tinder_manager
 # 
-# 1 attribut : tinder_matrix (servant à alerter au moment de former les couples au cas où des cellules se retrouveraient seules).
+# 6 attributs : 
+# 
+# - direction (typiquement celle de cellular_automaton)
+# - next_state (celle de cellular_automaton)
+# - up (True si up, random ou fly dans direction)
+# - down (True si down, gravity ou random dans direction)
+# - right (True si right, wind:right ou random dans direction)
+# - left (True si left, wind:left ou random dans direction)
 # 
 # #### Constructeur
 # 
-# __init__(self, next_state)
+# __init__(self, next_state, direction)
 # 
-# Prend une matrice d'entiers en entier typiquement le current_state du celullar_automaton ou le current_state du celullar_automaton entouré de 0 (dans le cas de l'expansion).
 # 
-# Fixe l'attribut tinder_matrix selon le nombre de voisins disponibles (4, 3 aux bords et 2 dans les coins).
+# #### Tinder_manager.get_next_tuple()
 # 
-# #### Tinder_manager.check_tinder_alert(self)
+# Cette méthode est celle pour choisir le couple de cellules à marier
 # 
-# Parcourt tinder et sort sous forme d'une liste les coordonnées des cellules célibataires avec 1 seul date possible.
+# #### Tinder_manager.get_next_tuples()
 # 
-# #### Tinder_manager.regular_mariage(tuples,tmp_coord) 
-# 
-# tmp_coord : tuple
-# 
-# tuples: liste de tuple
-# 
-# Retourne sous forme d'une liste les dates possibles de tmp_coord au sein de tuples. Il s'agit de la seule méthode utilisée du module si step_by_step = True. 
-# 
-# #### Tinder_manager.update_tinder(tmp_coord, husband, tuples)
-# 
-# tmp,coord, husband : tuple
-# 
-# tuples : liste de tuple
-# 
-# Parmi toutes les cellules anciennement célibataires, 2 voisins se sont mariés, on met à jour la tinder_matrix, et on retire éventuellement les cellules isolées de tuples.
-# 
-# #### Tinder_manager.get_next_tuples(next_state, logger)
-# 
-# next_state : comme défini dans le constructeur
-# 
-# logger : doit pointer sur un objet de la classe logging (typiquement celui de cellular_automaton)
-# 
-# Cette méthode est celle pour choisir les couples de cellules à marier
-# 
-# (Initialisation) : on crée tuples liste de toutes les cellules à marier
-# 
-# (Itération) : si check_tinder_alert détecte des cellules isolées il les marie en priorité. Sinon on prend une cellule au hasard, on trouve ses voisins disponibles et on choisit au hasard un amant parmi ceux-ci. On met à jour la tinder_matrix, et on ajoute à la liste des cellules mariées le nouveau couple, et on enlève de la liste de cellules à marier les amants.
-# 
-# #### Tinder_manager.get_next_tuple(next_step)
-# 
-# On crée une liste de toutes les coordonnées disponibles à marier, on choisit une cellule au hasard (tmp_coord), on appelle Tinder_manager.regular(mariage(tuples, tmp_coord)) pour avoir les dates disponibles, et on en choisit une au hasard parmi celles-ci.
+# On boucle la méthode précédente
 
-# In[4]:
+# In[13]:
 
 
 import tinder_manager as tm
+tinder = tm.Tinder_manager(initial_state3, ['random'])
 
 
-# In[5]:
+# In[15]:
 
 
 print('Config 1:')
-print(cg3.get_next_tuple(initial_state3))
+print(tinder.get_next_tuple())
 
 
-# In[6]:
+# In[16]:
 
 
 print ('Config 2:')
-tinder1 = tm.Tinder_manager(initial_state2)
-print(tinder1.get_next_tuples(initial_state2, logger = cg2.logger))
+print(tinder.get_next_tuples())
 
 
 # ### La transition aléatoire
@@ -212,7 +195,7 @@ print(tinder1.get_next_tuples(initial_state2, logger = cg2.logger))
 # 
 # La loi de transition du couple choisi se trouve aux coordonnées $ x*n\_spieces + y $ si le couple choisi a plor valeurs (x,y). On simule selon la loi de transition et on obtient un nombre de 1 à $n\_spieces^2$, noté Z. Les valeurs (u,v) du nouveau couple sont aux corrdonnées $ (Z // n\_spieces, Z \% n\_spieces) $ où $//$ désigne la division entière et $\%$ le modulo. Dans le cas step_by_step = False; on boucle.
 
-# In[7]:
+# In[17]:
 
 
 print ('Config 1:')
@@ -222,7 +205,7 @@ print('After:')
 print(cg3.next_step())
 
 
-# In[8]:
+# In[18]:
 
 
 print ('Config 2:')
@@ -244,7 +227,7 @@ print(cg2.next_step())
 # 
 # Attention, dans tous les cas, current_state pointera sur le dernier êtat après les n transitions.
 
-# In[9]:
+# In[19]:
 
 
 print ('Config 1:')
@@ -255,7 +238,7 @@ cg3.n_steps(add = True)
 print(cg3.all_states)
 
 
-# In[10]:
+# In[20]:
 
 
 print ('Config 2:')
@@ -278,14 +261,14 @@ print(cg2.all_states)
 # 
 # Quelques exemples de get_last_plot()
 
-# In[11]:
+# In[21]:
 
 
 print('Configuration 1')
 cg3.get_last_plot()
 
 
-# In[14]:
+# In[22]:
 
 
 print('Configuration 2')
