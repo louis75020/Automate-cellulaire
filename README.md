@@ -41,10 +41,6 @@ initial_statecg2; transition_matrix_cg2; params2.txt
 
 ## Documentation
 
-Au format html :
-
-cellular_automaton_tests.html
-
 Au format python :
 
 cellular_automaton_tests.ipynb
