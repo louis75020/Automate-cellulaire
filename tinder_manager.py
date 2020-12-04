@@ -3,131 +3,90 @@ import numpy as np
 
 class Tinder_manager():
     
-    def __init__(self, next_state):
+    def __init__(self, next_state, direction):
         
-        tinder_matrix = 4 * np.ones( np.shape(next_state), dtype='f' )
-        tinder_matrix[0,:] = 3 ; tinder_matrix[:, np.shape(tinder_matrix)[1] - 1] = 3 ; tinder_matrix[ np.shape(tinder_matrix)[0] - 1, :] = 3 ; tinder_matrix[:, 0 ] = 3
-        tinder_matrix[0,0] = 2 ; tinder_matrix[0, np.shape(tinder_matrix)[1] - 1] = 2 ; tinder_matrix[ np.shape(tinder_matrix)[0] - 1, 0] = 2 ; tinder_matrix[ np.shape(tinder_matrix)[0] - 1, np.shape(tinder_matrix)[1] - 1 ]=2
-        self.tinder_matrix = tinder_matrix
+        self.direction = direction 
+        self.next_state = next_state
+        self.up = (('random' in direction) or ('fly' in direction) or ('up' in direction))
+        self.down = (('random' in direction) or ('down' in direction) or ('gravity' in direction) )
+        self.right = (('random' in direction) or ('wind:right'in direction) or ('right' in direction))
+        self.left = (('random' in direction) or ('wind:left'in direction) or ('left' in direction))
         
-        
-        
-    #Find the lonely cells
-    def check_tinder_alert(self):
-        
-        tinder_matrix = self.tinder_matrix
-        lonely_cells = []
-        
-        for i in range(np.shape(tinder_matrix)[0]):
-            
-            for j in range(np.shape(tinder_matrix)[1]):
-                
-                if tinder_matrix [i,j] == 1 : lonely_cells.append((i,j))
-                    
-        return lonely_cells
-        
-        
-        
-    #Find randomly a couple among the neighbors
-    def regular_mariage (self, tuples, tmp_coord):
-        
-        potential_husbands = []
-        if (tmp_coord[0] - 1, tmp_coord[1]) in tuples : potential_husbands.append( (tmp_coord[0] - 1, tmp_coord[1]) )
-        if (tmp_coord[0] + 1, tmp_coord[1]) in tuples : potential_husbands.append( (tmp_coord[0] + 1, tmp_coord[1]) )
-        if (tmp_coord[0], tmp_coord[1] - 1) in tuples : potential_husbands.append( (tmp_coord[0], tmp_coord[1] - 1) )
-        if (tmp_coord[0], tmp_coord[1] + 1) in tuples : potential_husbands.append( (tmp_coord[0],tmp_coord[1] + 1) )
-        return potential_husbands
-        
-        
-    #Update the single cells
-    def update_tinder (self,  tmp_coord,  husband, tuples):
-        
-        tinder_matrix = self.tinder_matrix 
-        
-        tinder_matrix[ tmp_coord ] = np.inf
-        tinder_matrix[ husband ] = np.inf
-        
-        if tmp_coord[0] > 0 :
-            tinder_matrix[ tmp_coord[0] - 1, tmp_coord[1] ] -= 1
-            if tinder_matrix[ tmp_coord[0] - 1, tmp_coord[1] ] == 0 :
-                tuples.remove( (tmp_coord[0] - 1, tmp_coord[1]) )
-                
-        if tmp_coord[0] +1 < np.shape(tinder_matrix)[0] :
-            tinder_matrix[ tmp_coord[0] + 1, tmp_coord[1] ] -= 1
-            if tinder_matrix[ tmp_coord[0] + 1, tmp_coord[1] ] == 0 :
-                tuples.remove( (tmp_coord[0] + 1, tmp_coord[1]) )
-                
-        if tmp_coord[1] > 0 :
-            tinder_matrix[ tmp_coord[0], tmp_coord[1] - 1 ] -= 1
-            if tinder_matrix[ tmp_coord[0], tmp_coord[1] - 1] == 0 :
-                tuples.remove( (tmp_coord[0], tmp_coord[1] - 1) )
-                
-        if tmp_coord[1] + 1 < np.shape(tinder_matrix)[1] :
-            tinder_matrix[ tmp_coord[0], tmp_coord[1] + 1 ] -= 1
-            if tinder_matrix[ tmp_coord[0], tmp_coord[1] + 1] == 0 :
-                tuples.remove( (tmp_coord[0], tmp_coord[1] + 1) )
-                
-        if husband[0] > 0 :
-            tinder_matrix[ husband[0] - 1, husband[1] ] -= 1
-            if tinder_matrix[ husband[0] - 1, husband[1] ] == 0 :
-                tuples.remove( (husband[0] - 1, husband[1]) )
-                
-        if husband[0] +1 < np.shape(tinder_matrix)[0] :
-            tinder_matrix[ husband[0] + 1, husband[1] ] -= 1
-            if tinder_matrix[  husband[0] + 1, husband[1] ] == 0 :
-                tuples.remove( ( husband[0] + 1, husband[1]) )
-                
-        if husband[1] > 0 :
-            tinder_matrix[ husband[0], husband[1] -1 ] -= 1
-            if tinder_matrix[  husband[0], husband[1] -1 ] == 0 :
-                tuples.remove( ( husband[0], husband[1] -1) )
-                
-        if husband[1] + 1 < np.shape(tinder_matrix)[1] :
-            tinder_matrix[ husband[0], husband[1] +1 ] -=1
-            if tinder_matrix[  husband[0], husband[1] +1 ] == 0 :
-                tuples.remove( (husband[0], husband[1] +1) )
-                
-        return tinder_matrix
-        
-            
     
-    def get_next_tuples(self, next_state, logger):
+    def get_potential_husbands(self, wife):
         
-        logger.debug('>>>>>>>>>get_next_tupes>>>>>>>>')
-        tinder_matrix = self.tinder_matrix
+        left = self.left; right =self.right; up = self.up; down = self.down; next_state = self.next_state
+        coord0 = wife[0]
+        coord1 = wife[1]
+        potential_husbands = [] 
+        dim0, dim1 = np.shape(next_state)
         
-        #list of coordinates
+        if coord0 == 0 : up = False
+        if coord0 ==  dim0 -1 : down = False
+        if coord1 == 0 : left = False
+        if coord1 == dim1 - 1 : right = False
         
-        tuples = [ (i,j) for i in range(np.shape(next_state)[0]) for j in range(np.shape(next_state)[1]) ]
-        output = [] 
+        #left
+        if left :  
+            potential_husbands.append( (coord0, coord1 - 1))
+            
+        #right
+        if  right : 
+            potential_husbands.append( (coord0, coord1 + 1) )
+            
+        #up
+        if  down :
+            potential_husbands.append( (coord0 + 1, coord1) )
+                    
+        #down
+        if up :
+            potential_husbands.append( (coord0 - 1, coord1) )
         
-        while len(tuples) > len(tuples) % 2 : #if the number of cells is odd at least 1 cell will stay alone     
-            lonely_cells = self.check_tinder_alert()
+        return potential_husbands
+    
+    
+    
+    def get_next_tuple(self) :
+        
+        
+        next_state = self.next_state
+        dim0, dim1 = np.shape(next_state)
             
-            if lonely_cells != [] : tmp_coord = lonely_cells[0]
-            else: tmp_coord = tuples[ random.randint(0, len(tuples) -1 ) ] #Choose any left coordinate
+        while(True) :
             
-            #Find its possible husband
-            if  self.regular_mariage(lonely_cells, tmp_coord) != [] : 
-                potential_husbands =  self.regular_mariage(lonely_cells, tmp_coord) 
-                
-            else : potential_husbands = self.regular_mariage(tuples, tmp_coord)
+            wife_x = random.randint(0, dim0 -1 )
+            wife_y = random.randint(0, dim1 -1 )
+            wife = (wife_x, wife_y)
+        
+            potential_husbands = self.get_potential_husbands(wife)
+            if potential_husbands != [] : break
             
-            assert len(potential_husbands) > 0, "No possible couples found! The method does not work"
-
-            #Choose randomly the husband and add it to output
-            husband = potential_husbands[ random.randint(0, len(potential_husbands) -1 ) ]
-            output.append( ( tmp_coord,  husband ) )
-            #Tinder update
-            self.update_tinder( tmp_coord, husband, tuples)
-            #Next step
-            try:
-                tuples.remove( tmp_coord )
-                tuples.remove( husband )
-            except:
-                self.logger.error("Issue with get_next_tuples while removing tuples")
-                return []
-                
-        logger.debug('<<<<<<<<<<<get_next_tuples<<<<<<<<<<')
-            
+        husband_coordinate = random.randint(0, len(potential_husbands) -1 )
+        husband = potential_husbands[ husband_coordinate ]
+        
+        output = []
+        output.append( (wife, husband) )
+        
         return output
+       
+
+    
+    def get_next_tuples(self) :
+        
+        next_state = self.next_state
+        dim0, dim1 = np.shape(next_state)
+        n = int( np.min([ dim0, dim1])/2 )
+        
+        output = []
+        
+        for k in range(n):
+            
+            new_couple = self.get_next_tuple()
+            output.append( new_couple )
+            
+        return new_couple
+           
+       
+       
+        
+    

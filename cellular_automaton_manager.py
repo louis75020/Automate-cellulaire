@@ -4,6 +4,8 @@ import sys
 
 class Ca_manager(): 
     
+    
+    
     def __init__(self, initial_state_path, transition_matrix_path, other_params_path = None) :
         
         ##### wo other_params
