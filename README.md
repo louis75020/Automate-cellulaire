@@ -49,7 +49,7 @@ cellular_automaton_tests.html
 
 Au format python :
 
-cellular_automaton_tests.py
+cellular_automaton_tests.ipynb
 
 ## Programme
 
