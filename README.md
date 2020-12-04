@@ -31,8 +31,6 @@ sys
 
 ### Fichiers de tests
 
-initial_statecg1; transition_matrix_cg1; params1.txt
-
 Configuration 1 : projet (sans expansion de l'univers, avec toutes les directions de transition possibles, étape par étape)
 
 initial_statecg1; transition_matrix_cg1; params1.txt
