@@ -62,7 +62,7 @@ class Cellular_automaton_runner() :
             
             
         
-        #self.logger.debug('>>>>>>>>>>>>next_step>>>>>>>>>>>>')
+
         
         ### Values
         
