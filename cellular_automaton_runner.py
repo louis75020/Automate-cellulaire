@@ -4,8 +4,6 @@ import random
 #Custom package
 import tinder_manager as tm  
 
-   
-    ####### Automaton running
 
 class Cellular_automaton_runner() :
     
