@@ -82,7 +82,7 @@ class Tinder_manager():
         for k in range(n):
             
             new_couple = self.get_next_tuple()
-            output.append( new_couple )
+            output.append( new_couple[0] )
             
         return output
            
