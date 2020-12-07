@@ -26,21 +26,14 @@ class Tinder_manager():
         if coord1 == 0 : left = False
         if coord1 == dim1 - 1 : right = False
         
-        #left
-        if left :  
-            potential_husbands.append( (coord0, coord1 - 1))
+        if left :  potential_husbands.append( (coord0, coord1 - 1))
             
-        #right
-        if  right : 
-            potential_husbands.append( (coord0, coord1 + 1) )
+        if  right : potential_husbands.append( (coord0, coord1 + 1) )
             
-        #up
-        if  down :
-            potential_husbands.append( (coord0 + 1, coord1) )
+        if  down : potential_husbands.append( (coord0 + 1, coord1) )
                     
-        #down
-        if up :
-            potential_husbands.append( (coord0 - 1, coord1) )
+        if up : potential_husbands.append( (coord0 - 1, coord1) )
+            
         
         return potential_husbands
     
